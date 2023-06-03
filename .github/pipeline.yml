@@ -1,0 +1,104 @@
+name: biconomy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Biconomy
+    runs-on: ubuntu-latest
+    
+    steps:       
+     -        
+      name: Checkout repo
+      uses: actions/checkout@v3
+      with:
+          submodules: recursive
+
+     - 
+      name: Install kind
+      uses: helm/kind-action@v1.4.0
+      with:
+        install_only: true
+            
+     - 
+      name: Create and link local registry to cluster
+      run: |
+        ./kubernetes/kind/kind-with-registry.sh
+      id: kind_create_registry
+
+
+     - 
+        name: Cluster creation must complete
+        run: |
+            sleep 10
+
+     - 
+      name: Cluster Info
+      run: kubectl cluster-info --context kind-kind
+    
+     - 
+       name:  List containers [expect k8s node and registry]
+       run: kubectl get pods
+
+     - 
+       name: Build the image
+       run: docker compose build
+
+     - 
+      name: Push to local docker registry 
+      run: docker compose push
+
+     - 
+       name: Check local registry [Expect "biconomy"]
+       run: curl -X GET http://127.0.0.1:5001/v2/_catalog
+
+     - 
+      name: Deploy Nginx ingress controller
+      run: | 
+       kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+     - 
+       name: Setup to process requests
+       run: | 
+        kubectl wait --namespace ingress-nginx \
+        --for=condition=ready pod \
+        --selector=app.kubernetes.io/component=controller \
+        --timeout=90s
+
+     - 
+       name: Deploy application
+       run: kubectl apply -f kubernetes/kind/deployment.yml
+
+     - 
+        name: Pod creation must complete
+        run: |
+            sleep 10
+
+     - 
+       name: Confirm Pod creation [Expect biconomy-app and biconomy-app-2 ]
+       run: kubectl get pods
+
+     - 
+        name: Call endpoints on biconomy-app
+        run: |
+            echo "calling ping"
+            curl localhost/biconomy/ping
+            echo "calling pong"
+            curl localhost/biconomy/pong
+
+     - 
+        name: Call endpoints on biconomy-app-2
+        run: |
+            echo "calling ping"
+            curl localhost/biconomy-2/ping
+            echo "calling pong"
+            curl localhost/biconomy-2/pong
