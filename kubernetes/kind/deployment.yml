@@ -1,0 +1,75 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: biconomy-app
+  labels:
+    app: biconomy
+spec:
+  containers:
+    - name: biconomy
+      image: localhost:5001/biconomy
+      ports:
+        - containerPort: 3000
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: biconomy-service
+spec:
+  selector:
+    app: biconomy
+  ports:
+    # Default port used by the image
+    - port: 3000
+---
+kind: Pod
+apiVersion: v1
+metadata:
+  name: biconomy-app-2
+  labels:
+    app: biconomy-2
+spec:
+  containers:
+    - name: biconomy
+      image: localhost:5001/biconomy
+      ports:
+        - containerPort: 3000
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: biconomy-2-service
+spec:
+  selector:
+    app: biconomy-2
+  ports:
+    # Default port used by the image
+    - port: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: biconomy-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - http:
+        paths:
+          - pathType: Prefix
+            path: /biconomy(/|$)(.*)
+            backend:
+              service:
+                name: biconomy-service
+                port:
+                  number: 3000
+          - pathType: Prefix
+            path: /biconomy-2(/|$)(.*)
+            backend:
+              service:
+                name: biconomy-2-service
+                port:
+                  number: 3000
+---
+

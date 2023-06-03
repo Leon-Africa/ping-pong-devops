@@ -1,6 +1,7 @@
 version: "3"
 services:
   biconomy:
+    image: localhost:5001/biconomy
     container_name: biconomy
     build:
       dockerfile: Dockerfile
