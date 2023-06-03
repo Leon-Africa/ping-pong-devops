@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function(app) {
-  var controller = require('./controller');
+  var controller = require('../controllers/controller');
 
   app.route('/ping')
     .get(controller.pong)

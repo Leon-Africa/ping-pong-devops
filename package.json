@@ -1,19 +1,20 @@
 {
-  "name": "ping-pong",
+  "name": "ping-pong-devops",
   "version": "1.0.0",
-  "description": "API to verify RapidAPI/Mashape Proxy are still working",
+  "description": 
+  "A kubernetes implementation for a simple NodeJS and Express API to ping an api and get a response. An improvement on https://github.com/alexwalling/ping-pong-api",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "Alex Walling",
+  "author": "Leon Africa",
   "license": "ISC",
   "dependencies": {
-    "body-parser": "^1.17.2",
-    "express": "^4.15.4"
+    "body-parser": "^1.20.2",
+    "express": "^4.18.2"
   },
   "devDependencies": {
-    "nodemon": "^1.12.0"
+    "nodemon": "^2.0.22"
   }
 }
